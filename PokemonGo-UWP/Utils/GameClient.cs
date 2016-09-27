@@ -1057,7 +1057,7 @@ namespace PokemonGo_UWP.Utils
         /// FortDeployPokemon
         /// FortRecallPokemon
         StartGymBattle
-        AttackGym
+        /// AttackGym
 
         #endregion
 
