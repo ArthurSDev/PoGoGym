@@ -1054,8 +1054,8 @@ namespace PokemonGo_UWP.Utils
         }
 
         /// The following _client.Fort methods need implementation:
-        FortDeployPokemon
-        FortRecallPokemon
+        /// FortDeployPokemon
+        /// FortRecallPokemon
         StartGymBattle
         AttackGym
 
