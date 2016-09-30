@@ -77,8 +77,6 @@
             <utils:IntToBooleanConverter x:Key="IntToBooleanConverter" />
             <utils:PokemonLastHoursVisibiltyConverter x:Key="PokemonLastHoursVisibiltyConverter" />
             <utils:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <utils:FortDeployPokemonConverter x:Key="FortDeployPokemonConverter"/>
-            <utils:StartGymBattleConverter x:Key="StartGymBattleConverter"/>
           
             <converters:ValueWhenConverter x:Key="VisibleWhenCanEvolveConverter">
                 <converters:ValueWhenConverter.When>
