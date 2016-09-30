@@ -1054,10 +1054,10 @@ namespace PokemonGo_UWP.Utils
         }
 
         /// The following _client.Fort methods need implementation:
-            FortDeployPokemon
-            FortRecallPokemon;
-            StartGymBattle
-            AttackGym;
+        /// FortDeployPokemon
+        /// FortRecallPokemon
+        public static async Task<StartGymBattleResponse> StartGymBattle(string gymid, ulong defendingPokemonId, IEnumerable<ulong> attackingPokemonIds)
+        public static async Task<AttackGymResponse> AttackGym(string gymid, string battleId, List<POGOProtos.Data.Battle.BattleAction> battleActions, POGOProtos.Data.Battle.BattleAction lastRetrievedAction)
 
         #endregion
 
