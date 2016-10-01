@@ -114,6 +114,11 @@ namespace PokemonGo_UWP.ViewModels
                     GameClient.ToggleUpdateTimer();
                     await UpdatePlayerData(true);
                     break;
+                case GameMapNavigationModes.GymUpdate:
+                    // As above
+                    GameClient.ToggleUpdateTimer();
+                    await UpdatePlayerData(true);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -128,7 +133,7 @@ namespace PokemonGo_UWP.ViewModels
         public override async Task OnNavigatedFromAsync(IDictionary<string, object> suspensionState, bool suspending)
         {
             if (suspending)
-            {                
+            {
                 suspensionState[nameof(PlayerProfile)] = PlayerProfile.ToByteString().ToBase64();
                 suspensionState[nameof(PlayerStats)] = PlayerStats.ToByteString().ToBase64();
             }

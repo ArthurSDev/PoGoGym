@@ -2,9 +2,9 @@
 
 namespace PokemonGo_UWP.Views
 {
-    public sealed partial class SettingsPage : Page
+    public sealed partial class EggDetailPage : Page
     {
-        public SettingsPage()
+        public EggDetailPage()
         {
             InitializeComponent();
         }
