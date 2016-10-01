@@ -1,4 +1,4 @@
-﻿using POGOProtos.Inventory;
+using POGOProtos.Inventory;
 using PokemonGo_UWP.Utils;
 using System.Collections.ObjectModel;
 using System.Linq;
