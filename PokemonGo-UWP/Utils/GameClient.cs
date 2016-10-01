@@ -247,15 +247,9 @@ namespace PokemonGo_UWP.Utils
             new ObservableCollection<ItemData>();
 
         /// <summary>
-        ///     Stores free Incubators in the current inventory
+        ///     Stores Incubators in the current inventory
         /// </summary>
-        public static ObservableCollection<EggIncubator> FreeIncubatorsInventory { get; set; } =
-            new ObservableCollection<EggIncubator>();
-
-        /// <summary>
-        ///     Stores used Incubators in the current inventory
-        /// </summary>
-        public static ObservableCollection<EggIncubator> UsedIncubatorsInventory { get; set; } =
+        public static ObservableCollection<EggIncubator> IncubatorsInventory { get; set; } =
             new ObservableCollection<EggIncubator>();
 
         /// <summary>
@@ -380,7 +374,7 @@ namespace PokemonGo_UWP.Utils
                 GooglePassword = SettingsService.Instance.LastLoginService == AuthType.Google ? credentials.Password : null,
             };
 
-            _client = new Client(_clientSettings, null, DeviceInfos.Current) {AccessToken = LoadAccessToken()};
+            _client = new Client(_clientSettings, null, DeviceInfos.Current) { AccessToken = LoadAccessToken() };
             var apiFailureStrategy = new ApiFailureStrategy(_client);
             _client.ApiFailure = apiFailureStrategy;
             // Register to AccessTokenChanged
@@ -480,8 +474,8 @@ namespace PokemonGo_UWP.Utils
             if (!SettingsService.Instance.RememberLoginData)
                 SettingsService.Instance.UserCredentials = null;
             _heartbeat?.StopDispatcher();
-			LocationServiceHelper.Instance.PropertyChanged -= LocationHelperPropertyChanged;
-			_lastGeopositionMapObjectsRequest = null;
+            LocationServiceHelper.Instance.PropertyChanged -= LocationHelperPropertyChanged;
+            _lastGeopositionMapObjectsRequest = null;
         }
 
         #endregion
@@ -534,12 +528,12 @@ namespace PokemonGo_UWP.Utils
             };
             //Trick to trigger the PropertyChanged for MapAutomaticOrientationMode ;)
             SettingsService.Instance.MapAutomaticOrientationMode = SettingsService.Instance.MapAutomaticOrientationMode;
-			#endregion
-      Busy.SetBusy(true, Resources.CodeResources.GetString("GettingGpsSignalText"));
-			await LocationServiceHelper.Instance.InitializeAsync();
-			LocationServiceHelper.Instance.PropertyChanged += LocationHelperPropertyChanged;
-			// Before starting we need game settings
-			GameSetting =
+            #endregion
+            Busy.SetBusy(true, Resources.CodeResources.GetString("GettingGpsSignalText"));
+            await LocationServiceHelper.Instance.InitializeAsync();
+            LocationServiceHelper.Instance.PropertyChanged += LocationHelperPropertyChanged;
+            // Before starting we need game settings
+            GameSetting =
                 await
                     DataCache.GetAsync(nameof(GameSetting), async () => (await _client.Download.GetSettings()).Settings,
                         DateTime.Now.AddMonths(1));
@@ -553,20 +547,20 @@ namespace PokemonGo_UWP.Utils
             //await UpdateMapObjects();
             await UpdateInventory();
             await UpdateItemTemplates();
-            if(PlayerProfile != null && PlayerStats != null)
+            if (PlayerProfile != null && PlayerStats != null)
                 Busy.SetBusy(false);
         }
 
-		private static async void LocationHelperPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if(e.PropertyName==nameof(LocationServiceHelper.Instance.Geoposition))
-			{
-				// Updating player's position
-				var position = LocationServiceHelper.Instance.Geoposition.Coordinate.Point.Position;
-				if (_client != null)
-					await _client.Player.UpdatePlayerLocation(position.Latitude, position.Longitude, LocationServiceHelper.Instance.Geoposition.Coordinate.Accuracy);
-			}
-		}
+        private static async void LocationHelperPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LocationServiceHelper.Instance.Geoposition))
+            {
+                // Updating player's position
+                var position = LocationServiceHelper.Instance.Geoposition.Coordinate.Point.Position;
+                if (_client != null)
+                    await _client.Player.UpdatePlayerLocation(position.Latitude, position.Longitude, LocationServiceHelper.Instance.Geoposition.Coordinate.Accuracy);
+            }
+        }
 
         /// <summary>
         ///     DateTime for the last map update
@@ -649,7 +643,7 @@ namespace PokemonGo_UWP.Utils
                     var currentPokemon = PokemonsInventory
                         .FirstOrDefault(item => item.Id == hatchedEggResponse.PokemonId[i]);
 
-                    if(currentPokemon == null)
+                    if (currentPokemon == null)
                         continue;
 
                     await
@@ -658,10 +652,11 @@ namespace PokemonGo_UWP.Utils
                             currentPokemon.PokemonId, hatchedEggResponse.StardustAwarded[i], hatchedEggResponse.CandyAwarded[i],
                             hatchedEggResponse.ExperienceAwarded[i])).ShowAsyncQueue();
 
-                    NavigationHelper.NavigationState["CurrentPokemon"] =
-                        new PokemonDataWrapper(currentPokemon);
-                    BootStrapper.Current.NavigationService.Navigate(typeof(PokemonDetailPage));
-
+                    BootStrapper.Current.NavigationService.Navigate(typeof(PokemonDetailPage), new SelectedPokemonNavModel()
+                    {
+                        SelectedPokemonId = currentPokemon.PokemonId.ToString(),
+                        ViewMode = PokemonDetailPageViewMode.ReceivedPokemon
+                    });
                 }
             }
         }
@@ -772,6 +767,15 @@ namespace PokemonGo_UWP.Utils
         }
 
         /// <summary>
+        ///     Gets player's inventoryDelta
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<SetPlayerTeamResponse> SetPlayerTeam(TeamColor color)
+        {
+            return await _client.Player.SetPlayerTeam(color);
+        }
+
+        /// <summary>
         ///     Gets the rewards after leveling up
         /// </summary>
         /// <returns></returns>
@@ -848,12 +852,9 @@ namespace PokemonGo_UWP.Utils
                     .Select(item => item.First().InventoryItemData.Item), true);
 
             // Update incbuators
-            FreeIncubatorsInventory.AddRange(fullInventory.Where(item => item.InventoryItemData.EggIncubators != null)
+            IncubatorsInventory.AddRange(fullInventory.Where(item => item.InventoryItemData.EggIncubators != null)
                 .SelectMany(item => item.InventoryItemData.EggIncubators.EggIncubator)
-                .Where(item => item != null && item.PokemonId == 0), true);
-            UsedIncubatorsInventory.AddRange(fullInventory.Where(item => item.InventoryItemData.EggIncubators != null)
-                .SelectMany(item => item.InventoryItemData.EggIncubators.EggIncubator)
-                .Where(item => item != null && item.PokemonId != 0), true);
+                .Where(item => item != null), true);
 
             // Update Pokedex
             PokedexInventory.AddRange(fullInventory.Where(item => item.InventoryItemData.PokedexEntry != null)
@@ -1042,7 +1043,7 @@ namespace PokemonGo_UWP.Utils
         #region Gym Handling
 
         /// <summary>
-        ///     Gets the details for the given Gym
+        /// Gets the details for the given Gym
         /// </summary>
         /// <param name="gymid"></param>
         /// <param name="latitude"></param>
@@ -1053,13 +1054,54 @@ namespace PokemonGo_UWP.Utils
             return await _client.Fort.GetGymDetails(gymid, latitude, longitude);
         }
 
-        /// The following _client.Fort methods need implementation:
-        /// FortDeployPokemon
-        /// FortRecallPokemon
-        /// StartGymBattle   
-        /// AttackGym
-        
-	#endregion
+        /// <summary>
+        /// Deploy Pokemon to stay in the gym for its defending
+        /// </summary>
+        /// <param name="gymid"></param>
+        /// <param name="pokemonId"></param>
+        /// <returns></returns>
+        public static async Task<FortDeployPokemonResponse> FortDeployPokemon(string gymid, ulong pokemonId)
+        {
+            return await _client.Fort.FortDeployPokemon(gymid, pokemonId);
+        }
+
+        /// <summary>
+        /// Recall pokemon from the battle in the gym
+        /// </summary>
+        /// <param name="gymid"></param>
+        /// <param name="pokemonId"></param>
+        /// <returns></returns>
+        public static async Task<FortRecallPokemonResponse> FortRecallPokemon(string gymid, ulong pokemonId)
+        {
+            return await _client.Fort.FortRecallPokemon(gymid, pokemonId);
+        }
+
+        /// <summary>
+        /// Start the Gym Battle
+        /// </summary>
+        /// <param name="gymid"></param>
+        /// <param name="defendingPokemonId"></param>
+        /// <param name="attackingPokemonIds"></param>
+        /// <returns></returns>
+        public static async Task<StartGymBattleResponse> StartGymBattle(string gymid, ulong defendingPokemonId, IEnumerable<ulong> attackingPokemonIds)
+        {
+            return await _client.Fort.StartGymBattle(gymid, defendingPokemonId, attackingPokemonIds);
+        }
+
+        /// <summary>
+        /// Attacks the Gym (sends list of BattleAction to get processed in the fight)
+        /// </summary>
+        /// <param name="gymid"></param>
+        /// <param name="battleId"></param>
+        /// <param name="battleActions"></param>
+        /// <param name="lastRetrievedAction"></param>
+        /// <returns></returns>
+        public static async Task<AttackGymResponse> AttackGym(string gymid, string battleId, List<POGOProtos.Data.Battle.BattleAction> battleActions, POGOProtos.Data.Battle.BattleAction lastRetrievedAction)
+        {
+            return await _client.Fort.AttackGym(gymid, battleId, battleActions, lastRetrievedAction);
+        }
+
+        #endregion
 
         #region Items Handling
 
@@ -1096,7 +1138,7 @@ namespace PokemonGo_UWP.Utils
         /// <returns></returns>
         public static EggIncubator GetIncubatorFromEgg(PokemonData egg)
         {
-            return UsedIncubatorsInventory.First(item => item.Id.Equals(egg.EggIncubatorId));
+            return IncubatorsInventory.FirstOrDefault(item => item.Id == null ? false : item.Id.Equals(egg.EggIncubatorId));
         }
 
         #endregion
