@@ -1,4 +1,4 @@
-﻿using PokemonGo.RocketAPI.Enums;
+using PokemonGo.RocketAPI.Enums;
 
 namespace PokemonGo.RocketAPI.Console
 {
@@ -8,9 +8,9 @@ namespace PokemonGo.RocketAPI.Console
 
         public AuthType AuthType { get; set; }
 
-        public double -54.803417 { get; set; }
+        public double DefaultLatitude { get; set; }
 
-        public double -68.298683 { get; set; }
+        public double DefaultLongitude { get; set; }
 
         public double DefaultAccuracy { get; set; }
 
